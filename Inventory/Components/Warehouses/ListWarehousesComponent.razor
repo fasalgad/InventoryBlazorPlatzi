@@ -1,0 +1,47 @@
+﻿@using Business
+@using Entities
+
+ 
+<div>
+    Total alamacenes registradas: @items.Count
+</div>
+<hr />
+@if (items == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else
+{
+    <table id="warehousesTable" class="display table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>Referencia</th>
+                <th>Almacén</th>
+                <th>Dirección</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+            <tr>
+                <td>@item.WarehouseId</td>
+                <td>@item.WarehouseName</td>
+                <td>@item.WarehouseAddress</td>
+                <td>
+                    <a href="warehouse/update/@item.WarehouseId">Editar</a>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<WarehouseEntity> items = new List<WarehouseEntity>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = B_Warehouse.ItemList();
+    }
+}

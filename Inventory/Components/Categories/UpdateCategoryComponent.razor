@@ -1,0 +1,33 @@
+﻿@using Entities
+@using Business
+
+@inject NavigationManager NavManager
+<div>
+    <EditForm Model="Item">
+        <div class="form-group">
+            <label>Nombre de la categoría:</label>
+            <InputText @bind-Value="Item.CategoryName" class="form-control" />
+        </div> 
+
+        <input type="button" value="Actualizar Categoría" @onclick="UpdateProduct" />
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public string IdItem { set; get; }
+
+    CategoryEntity Item = new CategoryEntity();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Item = B_Category.ItemList(IdItem);
+    }
+
+    private void UpdateProduct()
+    {
+        B_Category.UpdateItem(Item);
+        NavManager.NavigateTo("product/list");
+    }
+
+}

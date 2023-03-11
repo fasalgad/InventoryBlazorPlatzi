@@ -1,0 +1,51 @@
+﻿@using Entities
+@using Business
+
+@inject NavigationManager NavManager
+
+<EditForm Model="@Item">
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <label for="warehouseId">Referencia:</label>
+        <label class="form-control disabled">@Item.WarehouseId</label> 
+    </div>
+    <div class="form-group">
+        <label for="name">Nombre del almacén:</label>
+        <InputText id="name" @bind-Value="Item.WarehouseName" class="form-control" />
+        <ValidationMessage For="@(() => Item.WarehouseName)" class="text-danger" />
+    </div>
+    <div class="form-group">
+        <label for="name">Dirección del almacén:</label>
+        <InputText id="name" @bind-Value="Item.WarehouseAddress" class="form-control" />
+        <ValidationMessage For="@(() => Item.WarehouseAddress)" class="text-danger" />
+    </div>
+    <div class="form-group">
+        <input type="button" value="Agregar Almacén" @onclick="Save" class="form-control btn btn-dark" />
+    </div>
+</EditForm>
+
+@code {
+    WarehouseEntity Item = new WarehouseEntity();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Item.WarehouseId = Guid.NewGuid().ToString();
+    }
+
+    private void Save()
+    {
+        B_Warehouse.CreateItem(Item);
+        NavManager.NavigateTo("warehouse/list");
+    }
+
+    private void HandleValidSubmit()
+    {
+        Console.WriteLine("OnValidSubmit");
+    }
+}
+
+<style scoped>
+    .form-control.disabled{
+        background-color:#8080803b;
+    }
+</style>

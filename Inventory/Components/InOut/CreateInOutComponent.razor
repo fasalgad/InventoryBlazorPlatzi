@@ -1,0 +1,99 @@
+﻿@using Entities
+@using Business
+
+<div class="form-group">
+    <select class="form-control" @onchange="OnChangeWarehouse">
+        <option value="">Selecciona una bodega...</option>
+        @foreach (var warehouse in warehouses)
+        {
+            <option value="@warehouse.WarehouseId"> @warehouse.WarehouseName </option>
+        }
+    </select>
+    <EditForm Model="Item">
+        <div class="form-group">
+            <InputSelect class="form-control" @bind-Value="@Item.StorageId">
+                <option value="">Selecciona un Producto...</option>
+                @foreach (var storage in storages)
+                {
+                    <option value="@storage.StorageId"> @storage.Product.ProductName </option>
+                }
+            </InputSelect>
+        </div>
+        <div class="form-group">
+            <label>Cantidad</label>
+            <InputNumber class="form-control" @bind-Value="@Item.Quantity"></InputNumber>
+        </div>
+        <div class="form-group">
+            <label for="entry">Es entrada?</label>
+            <InputCheckbox id="entry" class="form-control" @bind-Value="@Item.IsInput"></InputCheckbox>
+        </div>
+        <input class="form-control" type="button" value="@IsEntry" @onclick="SaveInOut" />
+    </EditForm>
+
+</div>
+<div>
+    @message
+</div>
+
+@code {
+    InputOutputEntity Item = new InputOutputEntity();
+
+    List<WarehouseEntity> warehouses = new List<WarehouseEntity>();
+    List<StorageEntity> storages = new List<StorageEntity>();
+
+    StorageEntity storage = new StorageEntity();
+    ProductEntity product = new ProductEntity();
+
+    string IsEntry => Item.IsInput ? "Registrar Entrada" : "Registrar Salida";
+
+    string message = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        warehouses = B_Warehouse.ItemList();
+    }
+
+    private void OnChangeWarehouse(ChangeEventArgs e)
+    {
+        var idWarehouse = e.Value.ToString();
+
+        storages = B_Storage.StorageProductsByWarehose(idWarehouse);
+
+    }
+    private void SaveInOut()
+    {
+        storage = storages.LastOrDefault(i => i.StorageId == Item.StorageId);
+        product = storage.Product;
+
+        if (Item.IsInput)
+        {
+            storage.PartialQuantity = storage.PartialQuantity + Item.Quantity;
+            B_Storage.UpdateItem(storage);
+
+            product.TotalQuantity = product.TotalQuantity + Item.Quantity;
+            B_Product.UpdateItem(product);
+
+            message = "Ingreso realizado";
+            B_InputOutput.CreateItem(Item);
+
+        }
+        else
+        {
+            if (storage.PartialQuantity >= Item.Quantity)
+            {
+                storage.PartialQuantity = storage.PartialQuantity - Item.Quantity;
+                B_Storage.UpdateItem(storage);
+
+                product.TotalQuantity = product.TotalQuantity - Item.Quantity;
+                B_Product.UpdateItem(product);
+
+                message = "Retiro realizado";
+                B_InputOutput.CreateItem(Item);
+            }
+            else
+            {
+                message = "No existe cantidad sufiente para realizar el retiro";
+            }
+        }
+    }
+}
